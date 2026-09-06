@@ -25,32 +25,36 @@ Côté propriétaire, chaque analyse déclenche :
 L'interface est responsive (mobile-first, confortable sur ordinateur) et s'affiche en français par défaut, automatiquement en anglais si la langue du dispositif n'est pas le français.
 🏗️ Architecture
 
-text
+mermaid
 
-┌──────────────┐    écriture    ┌──────────────────┐
-│    GLIDE     │ ─────────────► │  GOOGLE SHEETS   │
-│  (interface) │                │  (base de données)│
-└──────────────┘                └────────┬─────────┘
-                                         │ lit les lignes "En attente"
-                                         ▼
-                               ┌──────────────────┐
-                               │   APPS SCRIPT    │  orchestrateur
-                               │  (déclencheur)   │
-                               └────────┬─────────┘
-                                        │ construit le prompt
-                                        ▼
-                               ┌──────────────────┐
-                               │    GEMINI API    │  analyse (gratuit)
-                               └──────────────────┘
+flowchart LR
+    A[Recruteur] -->|colle l'offre ou swipe ses critères| B[Glide<br/>interface]
+    B -->|écrit une ligne «En attente»| C[Google Sheets<br/>Demandes]
+    C -->|déclencheur toutes les 1 min| D[Apps Script<br/>orchestrateur]
+    D -->|lit le profil| E[Google Sheets<br/>Profil]
+    D -->|construit le prompt| F[Gemini API]
+    F -->|score + justification| D
+    D -->|écrit le résultat| C
+    C -->|affiche le résultat| B
+    D -->|email récapitulatif| G[Recruteur]
+    D -->|journalise l'analyse| H[Stats_Competences]
+
+Le flux en une ligne : le recruteur remplit Glide → une ligne « En attente » apparaît dans Demandes → Apps Script récupère les lignes en attente + le profil → envoie le tout à Gemini → écrit % Match, Justification, Statut → Glide recharge et affiche, puis un email part (facultatif) et l'analyse est journalisée.
+
+Les onglets du Sheets :
+
+    Profil : compétences du candidat (intitulé, section, niveau, preuve/contexte) — source de vérité ;
+    Carroussel : configuration du mode Fun (sections, compétences, niveau de maîtrise, preuve) ;
+    Demandes : file d'attente + résultats (une ligne = un recruteur : mode, offre/carrousel, statut, % match, justification, erreur, email) ;
+    Soumissions_Competences : suggestions des recruteurs et décision de l'IA ;
+    Stats_Competences : journal d'analyse (date, entreprise, compétence identifiée).
+
+Les briques :
 
     Glide — l'interface (accès anonyme, deux modes, résultat, suggestions).
-    Google Sheets — la base de données :
-        Profil : compétences du candidat (intitulé, section, niveau, preuve/contexte) — source de vérité ;
-        Carroussel : configuration du mode Fun (sections, compétences, niveau de maîtrise, preuve) ;
-        Demandes : file d'attente + résultats (une ligne = un recruteur : mode, offre/carrousel, statut, % match, justification, erreur, email) ;
-        Soumissions_Competences : suggestions des recruteurs et décision de l'IA ;
-        Stats_Competences : journal d'analyse (date, entreprise, compétence identifiée).
+    Google Sheets — la base de données (voir onglets ci-dessus).
     Apps Script — l'orchestration : déclencheur périodique, construction du contexte profil, appel unique à l'IA (les deux modes partagent la même fonction), écriture des résultats, envoi du mail, purge de l'email.
+    Gemini API — l'analyse (plan gratuit).
     Gemini API — l'analyse (plan gratuit).
 
 📁 Structure du dépôt (proposée)
@@ -91,7 +95,7 @@ Le prompt de construction de l'application est dans docs/ (prompt IA Glide, en a
 Brique	État
 Backend (Sheets → Gemini → résultats + email + stats + suggestions)	✅ Opérationnel et testé
 Prompt IA unique (les deux modes, contrat JSON score / justification / competences_identifiees)	✅
-Interface Glide (accueil, 2 modes, résultat, suggestions)	✅ Livrée
+Interface Glide (accueil, 2 modes, résultat, suggestions)	✅ Livrée — Sprint 6 terminé
 Maquette de démo (demo/index.html)	✅ (parcours complet, données simulées)
 
 Le détail complet (épics, user stories, tâches) est dans docs/mapping-produit.md.
@@ -103,7 +107,6 @@ Le détail complet (épics, user stories, tâches) est dans docs/mapping-produit
 
 🛠️ Technologies
 
-Glide (no-code) · Google Sheets · Google Apps Script · Gemini API 
-Aucun serveur, coût d'exploitation nul (plans gratuits).
+Glide (no-code) · Google Sheets · Google Apps Script · Gemini API : aucun serveur, coût d'exploitation nul (plans gratuits).
 
 Projet portfolio, approche « code d'abord, interface ensuite » : back-end testé avant l'UI. Projet livré dans son intégralité (Sprints 1 à 6).
