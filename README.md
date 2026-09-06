@@ -28,15 +28,25 @@ L'interface est responsive (mobile-first, confortable sur ordinateur) et s'affic
 mermaid
 
 flowchart LR
+    
     A[Recruteur] -->|colle l'offre ou swipe ses critères| B[Glide<br/>interface]
+    
     B -->|écrit une ligne «En attente»| C[Google Sheets<br/>Demandes]
+    
     C -->|déclencheur toutes les 1 min| D[Apps Script<br/>orchestrateur]
+    
     D -->|lit le profil| E[Google Sheets<br/>Profil]
+    
     D -->|construit le prompt| F[Gemini API]
+    
     F -->|score + justification| D
+    
     D -->|écrit le résultat| C
+    
     C -->|affiche le résultat| B
+    
     D -->|email récapitulatif| G[Recruteur]
+    
     D -->|journalise l'analyse| H[Stats_Competences]
 
 Le flux en une ligne : le recruteur remplit Glide → une ligne « En attente » apparaît dans Demandes → Apps Script récupère les lignes en attente + le profil → envoie le tout à Gemini → écrit % Match, Justification, Statut → Glide recharge et affiche, puis un email part (facultatif) et l'analyse est journalisée.
@@ -62,16 +72,17 @@ Les briques :
 text
 
 job-match/
-├── apps-script/            # Code Google Apps Script (backend)
-│   ├── Code.gs            #   traiterNouvellesDemandes(), interrogerGemini(), …
-│   └── appsscript.json    #   manifest (déclencheur, permissions)
-├── docs/
-│   ├── mapping-produit.md #   User Story Mapping (épics, US, tâches)
-│   ├── prompt-ia.md       #   Prompt système (contrat JSON)
-│   └── screenshots/
-│       └── mail-recap.png #   Exemple d'email récapitulatif
-├── demo/
-│   └── index.html         #   Maquette de démo (parcours complet, données simulées)
+
+├── apps-script/           # Code Google Apps Script (backend)                                                        
+│   ├── Code.gs            #   traiterNouvellesDemandes(), interrogerGemini(), …                                               
+│   └── appsscript.json    #   manifest (déclencheur, permissions)                                         
+├── docs/                                                                                    
+│   ├── mapping-produit.md #   User Story Mapping (épics, US, tâches)                                              
+│   ├── prompt-ia.md       #   Prompt système (contrat JSON)                                              
+│   └── screenshots/                                              
+│       └── mail-recap.png #   Exemple d'email récapitulatif                                              
+├── demo/                                              
+│   └── index.html         #   Maquette de démo (parcours complet, données simulées)                                              
 └── README.md
 
 🚀 Mise en route
